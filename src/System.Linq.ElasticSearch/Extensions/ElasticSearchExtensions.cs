@@ -116,6 +116,21 @@ namespace System.Linq.ElasticSearch
         /// <param name="field">要进行判断的字段</param>
         /// <param name="value">要进行判断的值</param>
         /// <returns></returns>
+        public static ElasticQuery<TEntity> Equal<TEntity>(this ElasticQuery<TEntity> queries, Expression<Func<TEntity, object>> field, string value)
+            where TEntity : class
+        {
+            queries.Add(t => t.Term(q => q.Field(field).Value(value)));
+            return queries;
+        }
+        /// <summary>
+        /// 判断相等
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <typeparam name="TValue"></typeparam>
+        /// <param name="queries"></param>
+        /// <param name="field">要进行判断的字段</param>
+        /// <param name="value">要进行判断的值</param>
+        /// <returns></returns>
         public static ElasticQuery<TEntity> Equal<TEntity, TValue>(this ElasticQuery<TEntity> queries, Expression<Func<TEntity, object>> field, TValue value)
             where TEntity : class
             where TValue : struct
@@ -123,6 +138,374 @@ namespace System.Linq.ElasticSearch
             queries.Add(t => t.Term(q => q.Field(field).Value(value)));
             return queries;
         }
+        #region 大于等于
+        /// <summary>
+        /// 大于或等于
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <typeparam name="TValue"></typeparam>
+        /// <param name="queries"></param>
+        /// <param name="field">要进行判断的字段</param>
+        /// <param name="value">要进行判断的值</param>
+        /// <returns></returns>
+        public static ElasticQuery<TEntity> ThanOrEquals<TEntity>(this ElasticQuery<TEntity> queries, Expression<Func<TEntity, object>> field, DateTime time, string timeZone = "+08:00", DateMathTimeUnit dateMathTimeUnit = DateMathTimeUnit.Day)
+            where TEntity : class
+        {
+            queries.Add(mu => mu.DateRange(r => r.Field(field).TimeZone(timeZone).GreaterThanOrEquals(DateMath.Anchored(time).RoundTo(dateMathTimeUnit))));
+            return queries;
+        }
+        /// <summary>
+        /// 大于
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <typeparam name="TValue"></typeparam>
+        /// <param name="queries"></param>
+        /// <param name="field">要进行判断的字段</param>
+        /// <param name="value">要进行判断的值</param>
+        /// <returns></returns>
+        public static ElasticQuery<TEntity> Than<TEntity>(this ElasticQuery<TEntity> queries, Expression<Func<TEntity, object>> field, DateTime time, string timeZone = "+08:00", DateMathTimeUnit dateMathTimeUnit = DateMathTimeUnit.Day)
+            where TEntity : class
+        {
+            queries.Add(mu => mu.DateRange(r => r.Field(field).TimeZone(timeZone).GreaterThan(DateMath.Anchored(time).RoundTo(dateMathTimeUnit))));
+            return queries;
+        }
+        /// <summary>
+        /// 大于或等于
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <typeparam name="TValue"></typeparam>
+        /// <param name="queries"></param>
+        /// <param name="field">要进行判断的字段</param>
+        /// <param name="value">要进行判断的值</param>
+        /// <returns></returns>
+        public static ElasticQuery<TEntity> ThanOrEquals<TEntity>(this ElasticQuery<TEntity> queries, Expression<Func<TEntity, object>> field, double value)
+            where TEntity : class
+        {
+            queries.Add(mu => mu.Range(r => r.Field(field).GreaterThanOrEquals(value)));
+            return queries;
+        }
+        /// <summary>
+        /// 大于
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <typeparam name="TValue"></typeparam>
+        /// <param name="queries"></param>
+        /// <param name="field">要进行判断的字段</param>
+        /// <param name="value">要进行判断的值</param>
+        /// <returns></returns>
+        public static ElasticQuery<TEntity> Than<TEntity>(this ElasticQuery<TEntity> queries, Expression<Func<TEntity, object>> field, double value)
+            where TEntity : class
+        {
+            queries.Add(mu => mu.Range(r => r.Field(field).GreaterThan(value)));
+            return queries;
+        }
+        /// <summary>
+        /// 大于或等于
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <typeparam name="TValue"></typeparam>
+        /// <param name="queries"></param>
+        /// <param name="field">要进行判断的字段</param>
+        /// <param name="value">要进行判断的值</param>
+        /// <returns></returns>
+        public static ElasticQuery<TEntity> ThanOrEquals<TEntity>(this ElasticQuery<TEntity> queries, Expression<Func<TEntity, object>> field, long value)
+            where TEntity : class
+        {
+            queries.Add(mu => mu.LongRange(r => r.Field(field).GreaterThanOrEquals(value)));
+            return queries;
+        }
+        /// <summary>
+        /// 大于
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <typeparam name="TValue"></typeparam>
+        /// <param name="queries"></param>
+        /// <param name="field">要进行判断的字段</param>
+        /// <param name="value">要进行判断的值</param>
+        /// <returns></returns>
+        public static ElasticQuery<TEntity> Than<TEntity>(this ElasticQuery<TEntity> queries, Expression<Func<TEntity, object>> field, long value)
+            where TEntity : class
+        {
+            queries.Add(mu => mu.LongRange(r => r.Field(field).GreaterThan(value)));
+            return queries;
+        }
+        #region Nested
+        /// <summary>
+        /// 大于或等于
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <typeparam name="TValue"></typeparam>
+        /// <param name="queries"></param>
+        /// <param name="field">要进行判断的字段</param>
+        /// <param name="value">要进行判断的值</param>
+        /// <returns></returns>
+        public static ElasticQuery<TEntity> ThanOrEquals<TEntity>(this ElasticQuery<TEntity> queries, Expression<Func<TEntity, object>> paths, Expression<Func<TEntity, object>> field, long value)
+            where TEntity : class
+        {
+            queries.Add(t => t.Nested(n => n.Path(paths).Query(q => q.Bool(b => b.Must(m => m.Range(r => r.Field(field).GreaterThanOrEquals(value)))))));
+            return queries;
+        }
+        /// <summary>
+        /// 大于或等于
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <typeparam name="TValue"></typeparam>
+        /// <param name="queries"></param>
+        /// <param name="field">要进行判断的字段</param>
+        /// <param name="value">要进行判断的值</param>
+        /// <returns></returns>
+        public static ElasticQuery<TEntity> ThanOrEquals<TEntity>(this ElasticQuery<TEntity> queries, Expression<Func<TEntity, object>> paths, Expression<Func<TEntity, object>> field, DateTime time, string timeZone = "+08:00", DateMathTimeUnit dateMathTimeUnit = DateMathTimeUnit.Day)
+            where TEntity : class
+        {
+            queries.Add(t => t.Nested(n => n.Path(paths).Query(q => q.Bool(b => b.Must(m => m.DateRange(r => r.Field(field).TimeZone(timeZone).GreaterThanOrEquals(DateMath.Anchored(time).RoundTo(dateMathTimeUnit))))))));
+            return queries;
+        }
+        /// <summary>
+        /// 大于
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <typeparam name="TValue"></typeparam>
+        /// <param name="queries"></param>
+        /// <param name="field">要进行判断的字段</param>
+        /// <param name="value">要进行判断的值</param>
+        /// <returns></returns>
+        public static ElasticQuery<TEntity> Than<TEntity>(this ElasticQuery<TEntity> queries, Expression<Func<TEntity, object>> paths, Expression<Func<TEntity, object>> field, DateTime time, string timeZone = "+08:00", DateMathTimeUnit dateMathTimeUnit = DateMathTimeUnit.Day)
+            where TEntity : class
+        {
+            queries.Add(t => t.Nested(n => n.Path(paths).Query(q => q.Bool(b => b.Must(m => m.DateRange(r => r.Field(field).TimeZone(timeZone).GreaterThan(DateMath.Anchored(time).RoundTo(dateMathTimeUnit))))))));
+            return queries;
+        }
+        /// <summary>
+        /// 大于或等于
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <typeparam name="TValue"></typeparam>
+        /// <param name="queries"></param>
+        /// <param name="field">要进行判断的字段</param>
+        /// <param name="value">要进行判断的值</param>
+        /// <returns></returns>
+        public static ElasticQuery<TEntity> ThanOrEquals<TEntity>(this ElasticQuery<TEntity> queries, Expression<Func<TEntity, object>> paths, Expression<Func<TEntity, object>> field, double value)
+            where TEntity : class
+        {
+            queries.Add(t => t.Nested(n => n.Path(paths).Query(q => q.Bool(b => b.Must(m => m.Range(r => r.Field(field).GreaterThanOrEquals(value)))))));
+            return queries;
+        }
+        /// <summary>
+        /// 大于
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <typeparam name="TValue"></typeparam>
+        /// <param name="queries"></param>
+        /// <param name="field">要进行判断的字段</param>
+        /// <param name="value">要进行判断的值</param>
+        /// <returns></returns>
+        public static ElasticQuery<TEntity> Than<TEntity>(this ElasticQuery<TEntity> queries, Expression<Func<TEntity, object>> paths, Expression<Func<TEntity, object>> field, double value)
+            where TEntity : class
+        {
+            queries.Add(t => t.Nested(n => n.Path(paths).Query(q => q.Bool(b => b.Must(m => m.Range(r => r.Field(field).GreaterThan(value)))))));
+            return queries;
+        }
+        /// <summary>
+        /// 大于
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <typeparam name="TValue"></typeparam>
+        /// <param name="queries"></param>
+        /// <param name="field">要进行判断的字段</param>
+        /// <param name="value">要进行判断的值</param>
+        /// <returns></returns>
+        public static ElasticQuery<TEntity> Than<TEntity>(this ElasticQuery<TEntity> queries, Expression<Func<TEntity, object>> paths, Expression<Func<TEntity, object>> field, long value)
+            where TEntity : class
+        {
+            queries.Add(t => t.Nested(n => n.Path(paths).Query(q => q.Bool(b => b.Must(m => m.Range(r => r.Field(field).GreaterThan(value)))))));
+            return queries;
+        }
+        #endregion
+        #endregion
+        #region 小于
+        /// <summary>
+        /// 小于或等于
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <typeparam name="TValue"></typeparam>
+        /// <param name="queries"></param>
+        /// <param name="field">要进行判断的字段</param>
+        /// <param name="value">要进行判断的值</param>
+        /// <returns></returns>
+        public static ElasticQuery<TEntity> LessThanOrEquals<TEntity>(this ElasticQuery<TEntity> queries, Expression<Func<TEntity, object>> field, DateTime time, string timeZone = "+08:00", DateMathTimeUnit dateMathTimeUnit = DateMathTimeUnit.Day)
+            where TEntity : class
+        {
+            queries.Add(mu => mu.DateRange(r => r.Field(field).TimeZone(timeZone).LessThanOrEquals(DateMath.Anchored(time).RoundTo(dateMathTimeUnit))));
+            return queries;
+        }
+        /// <summary>
+        /// 小于
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <typeparam name="TValue"></typeparam>
+        /// <param name="queries"></param>
+        /// <param name="field">要进行判断的字段</param>
+        /// <param name="value">要进行判断的值</param>
+        /// <returns></returns>
+        public static ElasticQuery<TEntity> LessThan<TEntity>(this ElasticQuery<TEntity> queries, Expression<Func<TEntity, object>> field, DateTime time, string timeZone = "+08:00", DateMathTimeUnit dateMathTimeUnit = DateMathTimeUnit.Day)
+            where TEntity : class
+        {
+            queries.Add(mu => mu.DateRange(r => r.Field(field).TimeZone(timeZone).LessThan(DateMath.Anchored(time).RoundTo(dateMathTimeUnit))));
+            return queries;
+        }
+        /// <summary>
+        /// 小于或等于
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <typeparam name="TValue"></typeparam>
+        /// <param name="queries"></param>
+        /// <param name="field">要进行判断的字段</param>
+        /// <param name="value">要进行判断的值</param>
+        /// <returns></returns>
+        public static ElasticQuery<TEntity> LessThanOrEquals<TEntity>(this ElasticQuery<TEntity> queries, Expression<Func<TEntity, object>> field, double value)
+            where TEntity : class
+        {
+            queries.Add(mu => mu.Range(r => r.Field(field).LessThanOrEquals(value)));
+            return queries;
+        }
+        /// <summary>
+        /// 小于
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <typeparam name="TValue"></typeparam>
+        /// <param name="queries"></param>
+        /// <param name="field">要进行判断的字段</param>
+        /// <param name="value">要进行判断的值</param>
+        /// <returns></returns>
+        public static ElasticQuery<TEntity> LessThan<TEntity>(this ElasticQuery<TEntity> queries, Expression<Func<TEntity, object>> field, double value)
+            where TEntity : class
+        {
+            queries.Add(mu => mu.Range(r => r.Field(field).LessThan(value)));
+            return queries;
+        }
+        /// <summary>
+        /// 小于或等于
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <typeparam name="TValue"></typeparam>
+        /// <param name="queries"></param>
+        /// <param name="field">要进行判断的字段</param>
+        /// <param name="value">要进行判断的值</param>
+        /// <returns></returns>
+        public static ElasticQuery<TEntity> LessThanOrEquals<TEntity>(this ElasticQuery<TEntity> queries, Expression<Func<TEntity, object>> field, long value)
+            where TEntity : class
+        {
+            queries.Add(mu => mu.LongRange(r => r.Field(field).LessThanOrEquals(value)));
+            return queries;
+        }
+        /// <summary>
+        /// 小于或等于
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <typeparam name="TValue"></typeparam>
+        /// <param name="queries"></param>
+        /// <param name="field">要进行判断的字段</param>
+        /// <param name="value">要进行判断的值</param>
+        /// <returns></returns>
+        public static ElasticQuery<TEntity> LessThan<TEntity>(this ElasticQuery<TEntity> queries, Expression<Func<TEntity, object>> field, long value)
+            where TEntity : class
+        {
+            queries.Add(mu => mu.LongRange(r => r.Field(field).LessThan(value)));
+            return queries;
+        }
+        #region Nested
+        /// <summary>
+        /// 小于或等于
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <typeparam name="TValue"></typeparam>
+        /// <param name="queries"></param>
+        /// <param name="field">要进行判断的字段</param>
+        /// <param name="value">要进行判断的值</param>
+        /// <returns></returns>
+        public static ElasticQuery<TEntity> LessThanOrEquals<TEntity>(this ElasticQuery<TEntity> queries, Expression<Func<TEntity, object>> paths, Expression<Func<TEntity, object>> field, long value)
+            where TEntity : class
+        {
+            queries.Add(t => t.Nested(n => n.Path(paths).Query(q => q.Bool(b => b.Must(m => m.Range(r => r.Field(field).LessThanOrEquals(value)))))));
+            return queries;
+        }
+        /// <summary>
+        /// 小于或等于
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <typeparam name="TValue"></typeparam>
+        /// <param name="queries"></param>
+        /// <param name="field">要进行判断的字段</param>
+        /// <param name="value">要进行判断的值</param>
+        /// <returns></returns>
+        public static ElasticQuery<TEntity> LessThanOrEquals<TEntity>(this ElasticQuery<TEntity> queries, Expression<Func<TEntity, object>> paths, Expression<Func<TEntity, object>> field, DateTime time, string timeZone = "+08:00", DateMathTimeUnit dateMathTimeUnit = DateMathTimeUnit.Day)
+            where TEntity : class
+        {
+            queries.Add(t => t.Nested(n => n.Path(paths).Query(q => q.Bool(b => b.Must(m => m.DateRange(r => r.Field(field).TimeZone(timeZone).LessThanOrEquals(DateMath.Anchored(time).RoundTo(dateMathTimeUnit))))))));
+            return queries;
+        }
+        /// <summary>
+        /// 小于
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <typeparam name="TValue"></typeparam>
+        /// <param name="queries"></param>
+        /// <param name="field">要进行判断的字段</param>
+        /// <param name="value">要进行判断的值</param>
+        /// <returns></returns>
+        public static ElasticQuery<TEntity> LessThan<TEntity>(this ElasticQuery<TEntity> queries, Expression<Func<TEntity, object>> paths, Expression<Func<TEntity, object>> field, DateTime time, string timeZone = "+08:00", DateMathTimeUnit dateMathTimeUnit = DateMathTimeUnit.Day)
+            where TEntity : class
+        {
+            queries.Add(t => t.Nested(n => n.Path(paths).Query(q => q.Bool(b => b.Must(m => m.DateRange(r => r.Field(field).TimeZone(timeZone).LessThan(DateMath.Anchored(time).RoundTo(dateMathTimeUnit))))))));
+            return queries;
+        }
+        /// <summary>
+        /// 小于或等于
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <typeparam name="TValue"></typeparam>
+        /// <param name="queries"></param>
+        /// <param name="field">要进行判断的字段</param>
+        /// <param name="value">要进行判断的值</param>
+        /// <returns></returns>
+        public static ElasticQuery<TEntity> LessThanOrEquals<TEntity>(this ElasticQuery<TEntity> queries, Expression<Func<TEntity, object>> paths, Expression<Func<TEntity, object>> field, double value)
+            where TEntity : class
+        {
+            queries.Add(t => t.Nested(n => n.Path(paths).Query(q => q.Bool(b => b.Must(m => m.Range(r => r.Field(field).LessThanOrEquals(value)))))));
+            return queries;
+        }
+        /// <summary>
+        /// 小于
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <typeparam name="TValue"></typeparam>
+        /// <param name="queries"></param>
+        /// <param name="field">要进行判断的字段</param>
+        /// <param name="value">要进行判断的值</param>
+        /// <returns></returns>
+        public static ElasticQuery<TEntity> LessThan<TEntity>(this ElasticQuery<TEntity> queries, Expression<Func<TEntity, object>> paths, Expression<Func<TEntity, object>> field, double value)
+            where TEntity : class
+        {
+            queries.Add(t => t.Nested(n => n.Path(paths).Query(q => q.Bool(b => b.Must(m => m.Range(r => r.Field(field).LessThan(value)))))));
+            return queries;
+        }
+        /// <summary>
+        /// 小于
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <typeparam name="TValue"></typeparam>
+        /// <param name="queries"></param>
+        /// <param name="field">要进行判断的字段</param>
+        /// <param name="value">要进行判断的值</param>
+        /// <returns></returns>
+        public static ElasticQuery<TEntity> LessThan<TEntity>(this ElasticQuery<TEntity> queries, Expression<Func<TEntity, object>> paths, Expression<Func<TEntity, object>> field, long value)
+            where TEntity : class
+        {
+            queries.Add(t => t.Nested(n => n.Path(paths).Query(q => q.Bool(b => b.Must(m => m.Range(r => r.Field(field).LessThan(value)))))));
+            return queries;
+        }
+        #endregion
+        #endregion
         /// <summary>
         /// 判断包含
         /// </summary>
@@ -150,6 +533,16 @@ namespace System.Linq.ElasticSearch
             queries.Add(t => t.QueryString(q => q.DefaultField(field).Query(value).MinimumShouldMatch(1)));
             return queries;
         }
+        /// <summary>
+        /// 判断包含
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <typeparam name="TValue"></typeparam>
+        /// <param name="queries"></param>
+        /// <param name="paths"></param>
+        /// <param name="field"></param>
+        /// <param name="values"></param>
+        /// <returns></returns>
         public static ElasticQuery<TEntity> Like<TEntity, TValue>(this ElasticQuery<TEntity> queries, Expression<Func<TEntity, object>> paths, Expression<Func<TEntity, object>> field, IEnumerable<TValue> values) where TEntity : class
         {
             queries.Add(t => t.Nested(n => n.InnerHits(i => i.Explain()).Path(paths).Query(q => q.Terms(f => f.Field(field).Terms(values)))));

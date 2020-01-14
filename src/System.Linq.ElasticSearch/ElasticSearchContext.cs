@@ -1,9 +1,44 @@
 ﻿using Microsoft.Extensions.Logging;
 using Nest;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace System.Linq.ElasticSearch
 {
+    public class CategoryEntity
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+    }
+    public class DemoEntity
+    {
+        public Guid Id { get; set; }
+        public int Age { get; set; }
+        public string Name { get; set; }
+        [Nest.Nested]
+        public List<CategoryEntity> Items { get; set; }
+    }
+    public class xxx
+    {
+        ElasticSearchContext esContext = new ElasticSearchContext(null, null);
+        public void sss()
+        {
+            var query = esContext.Query<DemoEntity>("index-name");
+            query.Index("index-name");
+            query.Equal(f => f.Name, "姓名");
+            query.ThanOrEquals(f => f.Age, 20);
+            query.LessThan(f => f.Age, 30);
+            query.Like(p => p.Items, f => f.Items.First().Name, "类型");
+            var response = query.Skip(0).Take(50).OrderByDescending(f => f.Age).ToListAsync().Result;
+            var result = response.Documents.Select(t => new
+            {
+                t.Id,
+                t.Name,
+                t.Age,
+                t.Items
+            });
+        }
+    }
     /// <summary>
     /// 
     /// </summary>
