@@ -2,10 +2,12 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Nest;
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 
-namespace System.Linq.ElasticSearch
+namespace ElasticSearch.SimpleQuery
 {
     /// <summary>
     /// 
@@ -104,14 +106,13 @@ namespace System.Linq.ElasticSearch
         /// <returns></returns>
         public static ElasticQuery<TEntity> Equal<TEntity>(this ElasticQuery<TEntity> queries, Expression<Func<TEntity, object>> paths, Expression<Func<TEntity, object>> field, string value) where TEntity : class
         {
-            queries.Add(t => t.Nested(n => n.Path(paths).Query(q => q.Bool(b => b.Must(m => m.Term(qs => qs.Field(field).Value(value)))))));
+            queries.Add(t => t.Nested(n => n.Path(paths).Query(q => q.Bool(b => b.Must(m => m.QueryString(qs => qs.DefaultField(field).Query($"\"{value}\"")))))));
             return queries;
         }
         /// <summary>
         /// 判断相等
         /// </summary>
         /// <typeparam name="TEntity"></typeparam>
-        /// <typeparam name="TValue"></typeparam>
         /// <param name="queries"></param>
         /// <param name="field">要进行判断的字段</param>
         /// <param name="value">要进行判断的值</param>
@@ -119,7 +120,7 @@ namespace System.Linq.ElasticSearch
         public static ElasticQuery<TEntity> Equal<TEntity>(this ElasticQuery<TEntity> queries, Expression<Func<TEntity, object>> field, string value)
             where TEntity : class
         {
-            queries.Add(t => t.Term(q => q.Field(field).Value(value)));
+            queries.Add(t => t.QueryString(q => q.DefaultField(field).Query(value)));
             return queries;
         }
         /// <summary>
@@ -532,6 +533,32 @@ namespace System.Linq.ElasticSearch
         {
             queries.Add(t => t.QueryString(q => q.DefaultField(field).Query(value).MinimumShouldMatch(1)));
             return queries;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <param name="query"></param>
+        /// <param name="value"></param>
+        /// <param name="fields"></param>
+        /// <returns></returns>
+        public static QueryContainer Or<TEntity>(this QueryContainerDescriptor<TEntity> query, string value, params Expression<Func<TEntity, object>>[] fields) where TEntity : class
+        {
+            return query.QueryString(q => q.Fields(fields).Query(value));
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <param name="query"></param>
+        /// <param name="value"></param>
+        /// <param name="paths"></param>
+        /// <param name="fields"></param>
+        /// <returns></returns>
+        public static QueryContainer OrNested<TEntity>(this QueryContainerDescriptor<TEntity> query, string value, Expression<Func<TEntity, object>> paths, params Expression<Func<TEntity, object>>[] fields) where TEntity : class
+        {
+            return query.Nested(n => n.Path(paths).Query(q => q.QueryString(qs => qs.Fields(fields).Query(string.Join(" ", value.ToCharArray().Select(t => $"\"{t}\""))).MinimumShouldMatch(1))));
         }
         /// <summary>
         /// 判断包含

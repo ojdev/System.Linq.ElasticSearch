@@ -1,10 +1,11 @@
 ﻿using Microsoft.Extensions.Logging;
 using Nest;
+using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 
-namespace System.Linq.ElasticSearch
+namespace ElasticSearch.SimpleQuery
 {
     /// <summary>
     /// 
@@ -99,20 +100,19 @@ namespace System.Linq.ElasticSearch
         {
             SearchDescriptor<T> selector = new SearchDescriptor<T>();
             BoolQueryDescriptor<T> boolQuery = new BoolQueryDescriptor<T>();
-            if (_mustNotSelector.Count > 0)
+            if (_mustSelector.Count > 0)
             {
-                boolQuery = boolQuery.Must(_mustSelector);
+                boolQuery.Must(_mustSelector);
             }
             if (_mustNotSelector.Count > 0)
             {
-                boolQuery = boolQuery.MustNot(_mustNotSelector);
+                boolQuery.MustNot(_mustNotSelector);
             }
             if (!string.IsNullOrWhiteSpace(IndexName))
             {
                 selector.Index(IndexName);
             }
-            selector.Query(q => q.Bool(b => boolQuery));
-            selector.From(SkipCount ?? 0);
+            selector = selector.Query(q => q.Bool(b => boolQuery)).From(SkipCount ?? 0);
             if (TakeCount > 0)
             {
                 selector.Size(TakeCount.Value);
@@ -122,10 +122,11 @@ namespace System.Linq.ElasticSearch
                 selector.Sort(sortor);
             }
             var response = await _searchContext.Context.SearchAsync<T>(selector);
-            _searchContext.Logger.LogInformation($"[Success:{response.ApiCall.Success}]\t[IsValid:{response.IsValid}]\t{response.ApiCall.Uri}");
-            if (!response.ApiCall.Success)
+            if (!response.IsValid)
             {
+                _searchContext.Logger.LogError($"[Success:{response.ApiCall.Success}]\t{response.ApiCall.Uri}");
                 _searchContext.Logger.LogError(response.ApiCall.DebugInformation);
+                _searchContext.Logger.LogError(response.ApiCall.OriginalException?.Message);
             }
             return response;
         }
