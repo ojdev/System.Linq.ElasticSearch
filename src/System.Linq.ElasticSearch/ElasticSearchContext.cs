@@ -145,6 +145,12 @@ namespace ElasticSearch.SimpleQuery
                 bulkDescriptor.Index(indexName);
             }
             var response = await Context.BulkAsync(bulkDescriptor.IndexMany(new TEntity[] { entity }));
+            if (!response.IsValid)
+            {
+                Logger.LogError($"[Success:{response.ApiCall.Success}]\t{response.ApiCall.Uri}");
+                Logger.LogError(response.ApiCall.DebugInformation);
+                Logger.LogError(response.ApiCall.OriginalException?.Message);
+            }
             return response.ApiCall.Success;
         }
         /// <summary>
@@ -162,6 +168,12 @@ namespace ElasticSearch.SimpleQuery
                 bulkDescriptor.Index(indexName);
             }
             var response = await Context.BulkAsync(bulkDescriptor.IndexMany(entities));
+            if (!response.IsValid)
+            {
+                Logger.LogError($"[Success:{response.ApiCall.Success}]\t{response.ApiCall.Uri}");
+                Logger.LogError(response.ApiCall.DebugInformation);
+                Logger.LogError(response.ApiCall.OriginalException?.Message);
+            }
             return response.ApiCall.Success;
         }
         /// <summary>
@@ -179,6 +191,12 @@ namespace ElasticSearch.SimpleQuery
                 doc.Index(indexName);
             }
             var response = await Context.UpdateAsync<TEntity>(entity, u => doc);
+            if (!response.IsValid)
+            {
+                Logger.LogError($"[Success:{response.ApiCall.Success}]\t{response.ApiCall.Uri}");
+                Logger.LogError(response.ApiCall.DebugInformation);
+                Logger.LogError(response.ApiCall.OriginalException?.Message);
+            }
             return response.ApiCall.Success;
         }
     }
