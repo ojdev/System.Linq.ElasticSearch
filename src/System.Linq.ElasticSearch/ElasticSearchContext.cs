@@ -37,60 +37,14 @@ namespace ElasticSearch.SimpleQuery
         //    Logger = logger ?? throw new ArgumentNullException(nameof(logger));
         //} 
         #endregion
-
         /// <summary>
         /// 
         /// </summary>
         /// <param name="Ids"></param>
         /// <param name="indexName"></param>
         /// <returns></returns>
-        public async Task<ISearchResponse<TEntity>> GetByIdsAsync<TEntity>(IEnumerable<Guid> Ids, string indexName = null) where TEntity : class
-        {
-            SearchDescriptor<TEntity> selector = new SearchDescriptor<TEntity>();
-            if (!string.IsNullOrWhiteSpace(indexName))
-            {
-                selector.Index(indexName);
-            }
-            selector.Query(q => q.Ids(i => i.Values(Ids)));
-            var response = await Context.SearchAsync<TEntity>(selector);
-            if (!response.IsValid)
-            {
-                Logger.LogError($"[Success:{response.ApiCall.Success}]\t{response.ApiCall.Uri}");
-                Logger.LogError(response.ApiCall.DebugInformation);
-                Logger.LogError(response.ApiCall.OriginalException?.Message);
-            }
-            return response;
-        }
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="Ids"></param>
-        /// <param name="indexName"></param>
-        /// <returns></returns>
-        public async Task<ISearchResponse<TEntity>> GetByIdsAsync<TEntity>(IEnumerable<string> Ids, string indexName = null) where TEntity : class
-        {
-            SearchDescriptor<TEntity> selector = new SearchDescriptor<TEntity>();
-            if (!string.IsNullOrWhiteSpace(indexName))
-            {
-                selector.Index(indexName);
-            }
-            selector.Query(q => q.Ids(i => i.Values(Ids)));
-            var response = await Context.SearchAsync<TEntity>(selector);
-            if (!response.IsValid)
-            {
-                Logger.LogError($"[Success:{response.ApiCall.Success}]\t{response.ApiCall.Uri}");
-                Logger.LogError(response.ApiCall.DebugInformation);
-                Logger.LogError(response.ApiCall.OriginalException?.Message);
-            }
-            return response;
-        }
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="Ids"></param>
-        /// <param name="indexName"></param>
-        /// <returns></returns>
-        public async Task<ISearchResponse<TEntity>> GetByIdsAsync<TEntity>(IEnumerable<long> Ids, string indexName = null) where TEntity : class
+        public async Task<ISearchResponse<TEntity>> GetByIdsAsync<TEntity,TKey>(IEnumerable<TKey> Ids, string indexName = null) where TEntity : class
+            where TKey : Id
         {
             SearchDescriptor<TEntity> selector = new SearchDescriptor<TEntity>();
             if (!string.IsNullOrWhiteSpace(indexName))
@@ -111,9 +65,11 @@ namespace ElasticSearch.SimpleQuery
         /// 根据Id获取详情
         /// </summary>
         /// <typeparam name="TEntity"></typeparam>
+        /// <typeparam name="TKey"></typeparam>
         /// <param name="id"></param>
         /// <returns></returns>
-        public virtual async Task<TEntity> GetAsync<TEntity>(Guid id) where TEntity : class
+        public virtual async Task<TEntity> GetAsync<TEntity, TKey>(TKey id) where TEntity : class
+            where TKey : Id
         {
             var response = await Context.GetAsync<TEntity>(id);
             return response.Source;
@@ -122,10 +78,12 @@ namespace ElasticSearch.SimpleQuery
         /// 根据Id获取详情
         /// </summary>
         /// <typeparam name="TEntity"></typeparam>
+        /// <typeparam name="TKey"></typeparam>
         /// <param name="id"></param>
         /// <param name="indexName"></param>
         /// <returns></returns>
-        public virtual async Task<TEntity> GetAsync<TEntity>(Guid id, string indexName) where TEntity : class
+        public virtual async Task<TEntity> GetAsync<TEntity, TKey>(TKey id, string indexName) where TEntity : class
+            where TKey : Id
         {
             var response = await Context.GetAsync<TEntity>(id, q => q.Index(indexName));
             return response.Source;
@@ -185,12 +143,15 @@ namespace ElasticSearch.SimpleQuery
         /// <returns></returns>
         public virtual async Task<bool> UpdateAsync<TEntity>(TEntity entity, string indexName = null) where TEntity : class
         {
-            UpdateDescriptor<TEntity, TEntity> doc = new UpdateDescriptor<TEntity, TEntity>(entity);
+            IUpdateResponse<TEntity> response;
             if (!string.IsNullOrWhiteSpace(indexName))
             {
-                doc.Index(indexName);
+                response = await Context.UpdateAsync<TEntity>(entity, u => u.Doc(entity).Index(indexName));
             }
-            var response = await Context.UpdateAsync<TEntity>(entity, u => doc);
+            else
+            {
+                response = await Context.UpdateAsync<TEntity>(entity, u => u.Doc(entity));
+            }
             if (!response.IsValid)
             {
                 Logger.LogError($"[Success:{response.ApiCall.Success}]\t{response.ApiCall.Uri}");
