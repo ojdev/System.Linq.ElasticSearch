@@ -43,8 +43,8 @@ namespace ElasticSearch.SimpleQuery
         /// <param name="Ids"></param>
         /// <param name="indexName"></param>
         /// <returns></returns>
-        public async Task<ISearchResponse<TEntity>> GetByIdsAsync<TEntity, TKey>(IEnumerable<TKey> Ids, string indexName = null) where TEntity : class
-            where TKey : Id
+        public async Task<ISearchResponse<TEntity>> GetByIdsAsync<TEntity>(IEnumerable<Id> Ids, string indexName = null)
+            where TEntity : class
         {
             SearchDescriptor<TEntity> selector = new SearchDescriptor<TEntity>();
             if (!string.IsNullOrWhiteSpace(indexName))
@@ -65,11 +65,10 @@ namespace ElasticSearch.SimpleQuery
         /// 根据Id获取详情
         /// </summary>
         /// <typeparam name="TEntity"></typeparam>
-        /// <typeparam name="TKey"></typeparam>
         /// <param name="id"></param>
         /// <returns></returns>
-        public virtual async Task<TEntity> GetAsync<TEntity, TKey>(TKey id) where TEntity : class
-            where TKey : Id
+        public virtual async Task<TEntity> GetAsync<TEntity>(Id id)
+            where TEntity : class
         {
             var response = await Context.GetAsync<TEntity>(id);
             return response.Source;
@@ -78,12 +77,11 @@ namespace ElasticSearch.SimpleQuery
         /// 根据Id获取详情
         /// </summary>
         /// <typeparam name="TEntity"></typeparam>
-        /// <typeparam name="TKey"></typeparam>
         /// <param name="id"></param>
         /// <param name="indexName"></param>
         /// <returns></returns>
-        public virtual async Task<TEntity> GetAsync<TEntity, TKey>(TKey id, string indexName) where TEntity : class
-            where TKey : Id
+        public virtual async Task<TEntity> GetAsync<TEntity>(Id id, string indexName)
+            where TEntity : class
         {
             var response = await Context.GetAsync<TEntity>(id, q => q.Index(indexName));
             return response.Source;
@@ -184,6 +182,26 @@ namespace ElasticSearch.SimpleQuery
                 Logger.LogError(response.ApiCall.OriginalException?.Message);
             }
             return response.ApiCall.Success;
+        }
+        /// <summary>
+        /// 根据已知Id，进行添加或更新
+        /// </summary>
+        /// <typeparam name="Tentity"></typeparam>
+        /// <param name="id"></param>
+        /// <param name="entity"></param>
+        /// <param name="indexName"></param>
+        /// <returns></returns>
+        public virtual async Task<bool> AddOrUpdateAsync<Tentity>(Id id, Tentity entity, string indexName = null) where Tentity : class
+        {
+            IExistsResponse exists = string.IsNullOrWhiteSpace(indexName) ? await Context.DocumentExistsAsync<Tentity>(id) : await Context.DocumentExistsAsync<Tentity>(id, q => q.Index(indexName));
+            if (exists.Exists)
+            {
+                return await UpdateAsync(entity, indexName);
+            }
+            else
+            {
+                return await AddAsync(entity, indexName);
+            }
         }
     }
 }

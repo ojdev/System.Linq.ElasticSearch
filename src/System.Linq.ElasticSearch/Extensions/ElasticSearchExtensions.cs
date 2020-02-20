@@ -144,10 +144,11 @@ namespace ElasticSearch.SimpleQuery
         /// 大于或等于
         /// </summary>
         /// <typeparam name="TEntity"></typeparam>
-        /// <typeparam name="TValue"></typeparam>
         /// <param name="queries"></param>
         /// <param name="field">要进行判断的字段</param>
-        /// <param name="value">要进行判断的值</param>
+        /// <param name="time"></param>
+        /// <param name="timeZone"></param>
+        /// <param name="dateMathTimeUnit"></param>
         /// <returns></returns>
         public static ElasticQuery<TEntity> ThanOrEquals<TEntity>(this ElasticQuery<TEntity> queries, Expression<Func<TEntity, object>> field, DateTime time, string timeZone = "+08:00", DateMathTimeUnit dateMathTimeUnit = DateMathTimeUnit.Day)
             where TEntity : class
@@ -159,10 +160,11 @@ namespace ElasticSearch.SimpleQuery
         /// 大于
         /// </summary>
         /// <typeparam name="TEntity"></typeparam>
-        /// <typeparam name="TValue"></typeparam>
         /// <param name="queries"></param>
-        /// <param name="field">要进行判断的字段</param>
-        /// <param name="value">要进行判断的值</param>
+        /// <param name="field"></param>
+        /// <param name="time"></param>
+        /// <param name="timeZone"></param>
+        /// <param name="dateMathTimeUnit"></param>
         /// <returns></returns>
         public static ElasticQuery<TEntity> Than<TEntity>(this ElasticQuery<TEntity> queries, Expression<Func<TEntity, object>> field, DateTime time, string timeZone = "+08:00", DateMathTimeUnit dateMathTimeUnit = DateMathTimeUnit.Day)
             where TEntity : class
@@ -174,10 +176,9 @@ namespace ElasticSearch.SimpleQuery
         /// 大于或等于
         /// </summary>
         /// <typeparam name="TEntity"></typeparam>
-        /// <typeparam name="TValue"></typeparam>
         /// <param name="queries"></param>
-        /// <param name="field">要进行判断的字段</param>
-        /// <param name="value">要进行判断的值</param>
+        /// <param name="field"></param>
+        /// <param name="value"></param>
         /// <returns></returns>
         public static ElasticQuery<TEntity> ThanOrEquals<TEntity>(this ElasticQuery<TEntity> queries, Expression<Func<TEntity, object>> field, double value)
             where TEntity : class
@@ -189,10 +190,9 @@ namespace ElasticSearch.SimpleQuery
         /// 大于
         /// </summary>
         /// <typeparam name="TEntity"></typeparam>
-        /// <typeparam name="TValue"></typeparam>
         /// <param name="queries"></param>
-        /// <param name="field">要进行判断的字段</param>
-        /// <param name="value">要进行判断的值</param>
+        /// <param name="field"></param>
+        /// <param name="value"></param>
         /// <returns></returns>
         public static ElasticQuery<TEntity> Than<TEntity>(this ElasticQuery<TEntity> queries, Expression<Func<TEntity, object>> field, double value)
             where TEntity : class
@@ -204,10 +204,9 @@ namespace ElasticSearch.SimpleQuery
         /// 大于或等于
         /// </summary>
         /// <typeparam name="TEntity"></typeparam>
-        /// <typeparam name="TValue"></typeparam>
         /// <param name="queries"></param>
-        /// <param name="field">要进行判断的字段</param>
-        /// <param name="value">要进行判断的值</param>
+        /// <param name="field"></param>
+        /// <param name="value"></param>
         /// <returns></returns>
         public static ElasticQuery<TEntity> ThanOrEquals<TEntity>(this ElasticQuery<TEntity> queries, Expression<Func<TEntity, object>> field, long value)
             where TEntity : class
