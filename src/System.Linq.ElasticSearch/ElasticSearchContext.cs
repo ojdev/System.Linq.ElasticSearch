@@ -43,7 +43,7 @@ namespace ElasticSearch.SimpleQuery
         /// <param name="Ids"></param>
         /// <param name="indexName"></param>
         /// <returns></returns>
-        public async Task<ISearchResponse<TEntity>> GetByIdsAsync<TEntity,TKey>(IEnumerable<TKey> Ids, string indexName = null) where TEntity : class
+        public async Task<ISearchResponse<TEntity>> GetByIdsAsync<TEntity, TKey>(IEnumerable<TKey> Ids, string indexName = null) where TEntity : class
             where TKey : Id
         {
             SearchDescriptor<TEntity> selector = new SearchDescriptor<TEntity>();
@@ -97,12 +97,16 @@ namespace ElasticSearch.SimpleQuery
         /// <returns></returns>
         public virtual async Task<bool> AddAsync<TEntity>(TEntity entity, string indexName = null) where TEntity : class
         {
-            BulkDescriptor bulkDescriptor = new BulkDescriptor();
+            IIndexResponse response;
+            IndexRequest<TEntity> indexRequest = new IndexRequest<TEntity>(entity);
             if (!string.IsNullOrWhiteSpace(indexName))
             {
-                bulkDescriptor.Index(indexName);
+                response = await Context.IndexAsync(indexRequest, f => f.Index(indexName));
             }
-            var response = await Context.BulkAsync(bulkDescriptor.IndexMany(new TEntity[] { entity }));
+            else
+            {
+                response = await Context.IndexAsync(indexRequest);
+            }
             if (!response.IsValid)
             {
                 Logger.LogError($"[Success:{response.ApiCall.Success}]\t{response.ApiCall.Uri}");
@@ -112,19 +116,40 @@ namespace ElasticSearch.SimpleQuery
             return response.ApiCall.Success;
         }
         /// <summary>
-        /// 添加一个文档集合到索引中
+        /// 添加一个文档集合到索引中(只是简单的进行遍历并调用AddAsync)
         /// </summary>
         /// <typeparam name="TEntity"></typeparam>
         /// <param name="entities"></param>
         /// <param name="indexName"></param>
         /// <returns></returns>
-        public virtual async Task<bool> AddRangeAsync<TEntity>(TEntity[] entities, string indexName = null) where TEntity : class
+        public virtual async Task<bool> AddRangeAsync<TEntity>(IEnumerable<TEntity> entities, string indexName = null) where TEntity : class
+        {
+            var result = true;
+            foreach (var entity in entities)
+            {
+                var _ = await AddAsync(entity, indexName);
+                if (_ == false)
+                {
+                    result = false;
+                }
+            }
+            return result;
+        }
+        /// <summary>
+        /// 添加一个文档集合到索引中(此方法查询数据会有延时)
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <param name="entities"></param>
+        /// <param name="indexName"></param>
+        /// <returns></returns>
+        public virtual async Task<bool> BulkAsync<TEntity>(IEnumerable<TEntity> entities, string indexName = null) where TEntity : class
         {
             BulkDescriptor bulkDescriptor = new BulkDescriptor();
             if (!string.IsNullOrWhiteSpace(indexName))
             {
                 bulkDescriptor.Index(indexName);
             }
+            bulkDescriptor.Refresh(Elasticsearch.Net.Refresh.True);
             var response = await Context.BulkAsync(bulkDescriptor.IndexMany(entities));
             if (!response.IsValid)
             {
