@@ -93,18 +93,9 @@ namespace ElasticSearch.SimpleQuery
         /// <param name="entity"></param>
         /// <param name="indexName"></param>
         /// <returns></returns>
-        public virtual async Task<bool> AddAsync<TEntity>(TEntity entity, string indexName = null) where TEntity : class
+        public virtual async Task<bool> AddAsync<TEntity>(TEntity entity, string indexName) where TEntity : class
         {
-            IIndexResponse response;
-            IndexRequest<TEntity> indexRequest = new IndexRequest<TEntity>(entity);
-            if (!string.IsNullOrWhiteSpace(indexName))
-            {
-                response = await Context.IndexAsync(indexRequest, f => f.Index(indexName));
-            }
-            else
-            {
-                response = await Context.IndexAsync(indexRequest);
-            }
+            IIndexResponse response = await Context.IndexAsync(entity, f => f.Index(indexName));
             if (!response.IsValid)
             {
                 Logger.LogError($"[Success:{response.ApiCall.Success}]\t{response.ApiCall.Uri}");
@@ -120,7 +111,7 @@ namespace ElasticSearch.SimpleQuery
         /// <param name="entities"></param>
         /// <param name="indexName"></param>
         /// <returns></returns>
-        public virtual async Task<bool> AddRangeAsync<TEntity>(IEnumerable<TEntity> entities, string indexName = null) where TEntity : class
+        public virtual async Task<bool> AddRangeAsync<TEntity>(IEnumerable<TEntity> entities, string indexName) where TEntity : class
         {
             var result = true;
             foreach (var entity in entities)
