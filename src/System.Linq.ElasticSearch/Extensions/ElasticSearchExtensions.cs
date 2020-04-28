@@ -48,8 +48,9 @@ namespace ElasticSearch.SimpleQuery
         /// <param name="client"></param>
         /// <param name="indexName">索引名</param>
         /// <param name="max_result_window"></param>
+        /// <param name="shardsNumber">分片数</param>
         /// <returns></returns>
-        public static IElasticClient CreateOrUpdateIndex<T>(this IElasticClient client, string indexName, long max_result_window = 100000) where T : class
+        public static IElasticClient CreateOrUpdateIndex<T>(this IElasticClient client, string indexName, long max_result_window = 100000, int shardsNumber = 1) where T : class
         {
             try
             {
@@ -58,7 +59,7 @@ namespace ElasticSearch.SimpleQuery
                 if (!index.Exists)
                 {
                     CreateIndexDescriptor newIndex = new CreateIndexDescriptor(indexName)
-                        .Settings(s => s.NumberOfShards(5).NumberOfReplicas(1).Analysis(a => a.Analyzers(aa => aa.Language("standard_listing", sa => sa.Language(Language.Chinese)))))
+                        .Settings(s => s.NumberOfShards(shardsNumber).NumberOfReplicas(1).Analysis(a => a.Analyzers(aa => aa.Language("standard_listing", sa => sa.Language(Language.Chinese)))))
                         .Mappings(ms => ms.Map<T>(m => m.AutoMap()));
                     ICreateIndexResponse create = client.CreateIndex(newIndex);
                     Console.WriteLine($"[{indexName}]\t索引已创建。");
