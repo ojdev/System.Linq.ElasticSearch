@@ -42,18 +42,71 @@ namespace ElasticSearch.SimpleQuery
             return client;
         }
         /// <summary>
+        /// 重建索引
+        /// </summary>
+        /// <param name="client"></param>
+        /// <param name="oldIndexName">就索引名字</param>
+        /// <param name="newIndexName">新索引名字</param>
+        /// <param name="shardsNumber"></param>
+        /// <returns></returns>
+        public static bool ReIndex<T>(IElasticClient client, string oldIndexName, string newIndexName, int shardsNumber = 1) where T : class
+        {
+            //检查新索引别名
+            var alias = client.AliasExists($"{newIndexName}-reindex");
+            //如果改别名不存在
+            if (!alias.Exists)
+            {
+                //检查是否存在新索引
+                IExistsResponse newIndex = client.IndexExists(newIndexName);
+                client.UpdateIndexSettings(Indices.Index(newIndexName), setting => setting.IndexSettings(isetting => isetting.Setting("max_result_window", 100000)));
+                //如果新索引不存在则创建一个新索引，需要修改各项创建索引时才需要的参数则在这处理
+                if (!newIndex.Exists)
+                {
+                    CreateIndexDescriptor createIndex = new CreateIndexDescriptor(newIndexName)
+                    .Settings(s => s.NumberOfShards(shardsNumber).Analysis(a => a.Analyzers(aa => aa.Language("standard_listing", sa => sa.Language(Language.Chinese)))))
+                    .Mappings(ms => ms.Map<T>(m => m.AutoMap()));
+                    ICreateIndexResponse create = client.CreateIndex(createIndex);
+                    Console.WriteLine($"{newIndexName}索引创建：{create.ApiCall.Success}");
+                    //给新创建的索引添加一个索引别名表示时重新创建的
+                    var r2 = client.Alias(t => t.Add(a => a.Index(newIndexName).Alias($"{newIndexName}-reindex")));
+                    Console.WriteLine($"索引别名{newIndexName}=>{newIndexName}：{r2.ApiCall.Success}");
+                }
+                //将老索引中的文档索引导新建的索引
+                var r1 = client.ReindexOnServer(r => r.Source(s => s.Index(Indices.Index(oldIndexName))).Destination(d => d.Index(newIndexName)));
+                Console.WriteLine($"重新索引：{r1.ApiCall.Success}");
+                if (r1.ApiCall.Success)
+                {
+                    //老索引中的所有文档全部到新索引之后删除老索引
+                    client.DeleteIndex(Indices.Index(oldIndexName));
+                    //新索引设置别名为老索引的名字
+                    var r3 = client.Alias(t => t.Add(a => a.Index(newIndexName).Alias(oldIndexName)));
+                    Console.WriteLine($"索引别名{newIndexName}=>{oldIndexName}：{r3.ApiCall.Success}");
+                }
+            }
+            return alias.Exists;
+        }
+        /// <summary>
         /// 
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="client"></param>
         /// <param name="indexName">索引名</param>
+        /// <param name="newIndexName">新索引名，重建索引用</param>
         /// <param name="max_result_window"></param>
         /// <param name="shardsNumber">分片数</param>
         /// <returns></returns>
-        public static IElasticClient CreateOrUpdateIndex<T>(this IElasticClient client, string indexName, long max_result_window = 100000, int shardsNumber = 1) where T : class
+        public static IElasticClient CreateOrUpdateIndex<T>(this IElasticClient client, string indexName, string newIndexName = null, long max_result_window = 100000, int shardsNumber = 1) where T : class
         {
             try
             {
+                if (!string.IsNullOrWhiteSpace(newIndexName))
+                {
+                    var x = ReIndex<T>(client, indexName, newIndexName, shardsNumber);
+                    if (x == false)
+                    {
+                        indexName = newIndexName;
+                    }
+                }
                 IExistsResponse index = client.IndexExists(indexName);
                 client.UpdateIndexSettings(Indices.Index(indexName), setting => setting.IndexSettings(isetting => isetting.Setting("max_result_window", max_result_window)));
                 if (!index.Exists)
